@@ -13,3 +13,4 @@ def test_identify_number_codes():
 
 def test_identify_output():
     assert identify_output(number_codes_identified_sets, output) == output_identified
+
