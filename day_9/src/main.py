@@ -149,7 +149,7 @@ def find_minima(data: NDArray) -> NDArray:
 
 def calc_risk(minima: NDArray, data: NDArray) -> int:
     """
-    :param minima: output of find_minima
+    :param minima: output of find_minima()
     :param data: 2d array of basin
     :return: sum of the risk levels
     """
@@ -178,20 +178,23 @@ def part_1() -> int:
 @timer_func
 def part_2() -> int:
     """
-    :return: sum of all the size of the 3 largest basins
+    :return: product of the sizes of the 3 largest basins
     """
     basin = read_input("puzzle_input.txt")
-    logging.info("Calculating the sum of all the size of the 3 largest basins")
-    basin_boolean = []
+    logging.info("Calculating the product of all the size of the 3 largest basins")
+    basin_binary = []
     for i in basin:
-        basin_boolean.append([0 if j == 9 else 1 for j in i])
-    basin_boolean = np.array(basin_boolean)
-    properties = measure.regionprops(measure.label(basin_boolean, background=0, connectivity=1))
+        basin_binary.append([0 if j == 9 else 1 for j in i])
+    basin_binary = np.array(basin_binary)
+
+    # Find basin size via finding connected components in the basin_binary matrix
+    properties = measure.regionprops(measure.label(basin_binary, background=0, connectivity=1))
     basin_sizes = []
     for prop in properties:
         basin_sizes.append(prop.area)
     basin_sizes.sort(reverse=True)
     answer = basin_sizes[0] * basin_sizes[1] * basin_sizes[2]
+    logging.info(f"The sum of all the size of the 3 largest basins is {answer}")
 
     return answer
 
