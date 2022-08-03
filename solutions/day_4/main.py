@@ -140,6 +140,3 @@ def part_2() -> int:
 if __name__ == '__main__':
     print(f"Solution to part 1: {part_1()}")
     print(f"Solution to part 2: {part_2()}")
-
-
-
