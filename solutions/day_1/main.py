@@ -31,6 +31,7 @@ def part_1() -> int:
     number_of_increase = [1 if i > 0 else 0 for i in v_diff]
     return sum(number_of_increase)
 
+
 def part_2() -> int:
     """
     :return: total number of increases over the running sum

@@ -1,2 +1,2 @@
-# Advent_of_Code
- Solutions 2021
+# Advent of Code
+ Solutions to exercises from 2021

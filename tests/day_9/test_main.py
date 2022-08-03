@@ -1,4 +1,4 @@
-from day_9.src.main import find_minima, calc_risk
+from solutions.day_9.main import find_minima, calc_risk
 import numpy as np
 
 x = np.array([[2, 1, 9, 9, 9, 4, 3, 2, 1, 0],

@@ -1,9 +1,12 @@
+"""
+Day 12 Exercise - Caves
+"""
 from time import monotonic_ns
+from collections import Counter
+from collections.abc import Generator
 import logging
 import sys
 import networkx as nx
-from collections import Counter
-from collections.abc import Generator
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -16,32 +19,47 @@ logging.basicConfig(
 
 
 def timer_func(func):
+    """
+    Timer for functions
+    :param func:
+    :return:
+    """
     def wrap_func(*args, **kwargs):
-        t1 = monotonic_ns()
+        t_1 = monotonic_ns()
         result = func(*args, **kwargs)
-        t2 = monotonic_ns()
-        logging.info(f'Function {func.__name__!r} executed in {(t2 - t1):,d}ns')
+        t_2 = monotonic_ns()
+        logging.info(f'Function {func.__name__!r} '
+                     f'executed in {(t_2 - t_1):,d}ns')
         return result
 
     return wrap_func
 
 
 def read_input(puzzle_file: str) -> nx.Graph:
-    with open(puzzle_file, "r") as f:
-        puzzle_input = f.read().splitlines()
-    G = nx.Graph()
-    for i in puzzle_input:
-        x = i.split("-")
-        G.add_edge(x[0], x[1])
-    return G
-
-
-def simple_paths_infinite_capital_nodes(G: nx.Graph, source: str, target: str) -> Generator[str]:
     """
-    A modified depth-first search algorithm for paths, were nodes marked with capital letters
+    Reads puzzle input
+    :param puzzle_file: name of puzzle_input file
+    :return: cave graph as a nx.Graph object
+    """
+    with open(puzzle_file, "r", encoding="utf-8") as file:
+        puzzle_input = file.read().splitlines()
+    cave_graph = nx.Graph()
+    for i in puzzle_input:
+        edge = i.split("-")
+        cave_graph.add_edge(edge[0], edge[1])
+    return cave_graph
+
+
+def simple_paths_infinite_capital_nodes(caves_graph: nx.Graph,
+                                        source: str,
+                                        target: str) -> Generator[str]:
+    """
+    A modified depth-first search algorithm for paths,
+    were nodes marked with capital letters
     are allowed to be repeated indefinitely.
-    Inspired by https://networkx.org/documentation/stable/_modules/networkx/algorithms/simple_paths.html#all_simple_paths
-    :param G: an undirected graph (no parallel edges)
+    Inspired by networkx:
+    https://networkx.org/documentation/stable/_modules/networkx/algorithms/simple_paths.html#all_simple_paths
+    :param caves_graph: an undirected graph (no parallel edges)
     :param source: starting node
     :param target: ending node
     :return: a generator, generating the next path from source to target
@@ -49,7 +67,8 @@ def simple_paths_infinite_capital_nodes(G: nx.Graph, source: str, target: str) -
 
     targets = {target}
     visited = [source]
-    stack = [iter(G[source])]  # create iterator for neighbours of source
+    # create iterator for neighbours of source
+    stack = [iter(caves_graph[source])]
     while stack:
         children = stack[-1]  # gets latest iterator
         child = next(children, None)
@@ -57,31 +76,38 @@ def simple_paths_infinite_capital_nodes(G: nx.Graph, source: str, target: str) -
             stack.pop()  # delete latest iterator
             visited.pop()  # delete last visited node from path
         else:
-            visited_lower = [node for node in visited if node.islower()]  # list of lower case nodes visited
-            if child in visited_lower:  # if lower case node already visited in this path
+            # list of lower case nodes visited
+            visited_lower = [node for node in visited if node.islower()]
+            # if lower case node already visited in this path
+            if child in visited_lower:
                 continue
             if child in targets:  # if arrived at ending node
                 yield list(visited) + [child]  # generate path
             visited.append(child)  # append to visited nodes
             if targets - set(visited):
-                stack.append(iter(G[child]))  # expand stack to investigate neighbours of child
+                # expand stack to investigate neighbours of child
+                stack.append(iter(caves_graph[child]))
             else:  # if end has been reached
                 visited.pop()  # maybe other ways to child
 
 
-def simple_paths_2_single_lowercase_nodes(G: nx.Graph, source: str, target: str) -> Generator[str]:
+def simple_paths_2_single_lowercase_nodes(caves_graph: nx.Graph,
+                                          source: str,
+                                          target: str) -> Generator[str]:
     """
-    A modified depth-first search algorithm for paths, were nodes marked with capital letters
-    are allowed to be repeated indefinitely, and one lowercase node can occur twice
+    A modified depth-first search algorithm for paths,
+    were nodes marked with capital letters
+    are allowed to be repeated indefinitely,
+    and one lowercase node can occur twice
     Inspired by https://networkx.org/documentation/stable/_modules/networkx/algorithms/simple_paths.html#all_simple_paths
-    :param G: an undirected graph (no parallel edges)
+    :param caves_graph: an undirected graph (no parallel edges)
     :param source: starting node
     :param target: ending node
     :return: a generator, generating the next path from source to target
     """
     targets = {target}
     visited = [source]
-    stack = [iter(G[source])]  # create a list of neighbour iterators
+    stack = [iter(caves_graph[source])]  # create a list of neighbour iterators
     while stack:  # iterates over neighbours
         children = stack[-1]  # gets latest iterator
         child = next(children, None)
@@ -89,11 +115,14 @@ def simple_paths_2_single_lowercase_nodes(G: nx.Graph, source: str, target: str)
             stack.pop()  # delete neighbour iterator
             visited.pop()  # delete last visited node
         else:
-            visited_lower = [node for node in visited if node.islower()]  # list of lower case nodes visited
-            tot_low_visits = Counter(visited_lower)  # a counter of how often lowercase nodes visited
+            # list of lower case nodes visited
+            visited_lower = [node for node in visited if node.islower()]
+            # a counter of how often lowercase nodes visited
+            tot_low_visits = Counter(visited_lower)
             if len(visited_lower) > 1:
+                # if one lowercase node visited >2 times
                 if tot_low_visits.most_common(1)[0][1] > 2 or \
-                        tot_low_visits.most_common(2)[1][1] > 1:  # if one lowercase node visited >2 times
+                        tot_low_visits.most_common(2)[1][1] > 1:
                     stack.pop()  # delete neighbour iterator
                     visited.pop()  # delete last visited node
                     continue
@@ -103,7 +132,7 @@ def simple_paths_2_single_lowercase_nodes(G: nx.Graph, source: str, target: str)
                 yield list(visited) + [child]  # generate path
             visited.append(child)  # create new entry for if not visited
             if targets - set(visited):  # expand stack until find all targets
-                stack.append(iter(G[child]))
+                stack.append(iter(caves_graph[child]))
             else:   # if end reached
                 visited.pop()  # maybe other ways to child
 
@@ -113,7 +142,8 @@ def part_1() -> int:
     """
     :return:   Total number of paths
     """
-    logging.info("Calculating the total number of simple paths where capital nodes can repeat")
+    logging.info("Calculating the total number\
+                  of simple paths where capital nodes can repeat")
     caves = read_input("puzzle_input.txt")
 
     # draw network
@@ -135,7 +165,8 @@ def part_2() -> int:
     """
     :return: Total number of paths
     """
-    logging.info("Calculating the total number of simple paths where one lowercase node can occur twice")
+    logging.info("Calculating the total number of simple /"
+                 "paths where one lowercase node can occur twice")
     caves = read_input("puzzle_input.txt")
 
     my_paths = []

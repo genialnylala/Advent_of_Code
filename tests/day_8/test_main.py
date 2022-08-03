@@ -1,4 +1,4 @@
-from day_8.src.main import identify_number_codes, identify_output
+from solutions.day_8.main import identify_number_codes, identify_output
 
 output = ['cdfeb', 'fcadb', 'cdfeb', 'cdbaf']
 output_identified = 5353
