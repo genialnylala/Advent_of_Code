@@ -150,9 +150,7 @@ def part_1() -> int:
     # nx.draw_networkx(caves)
     # plt.savefig("caves")
 
-    my_paths = []
-    for path in simple_paths_infinite_capital_nodes(caves, "start", "end"):
-        my_paths.append(path)
+    my_paths = [path for path in simple_paths_infinite_capital_nodes(caves, "start", "end")]
     no_paths = len(my_paths)
 
     logging.info(f"The total number of paths is {no_paths}")
@@ -169,9 +167,7 @@ def part_2() -> int:
                  "paths where one lowercase node can occur twice")
     caves = read_input("puzzle_input.txt")
 
-    my_paths = []
-    for path in simple_paths_2_single_lowercase_nodes(caves, "start", "end"):
-        my_paths.append(path)
+    my_paths = [path for path in simple_paths_2_single_lowercase_nodes(caves, "start", "end")]
     no_paths = len(my_paths)
 
     logging.info(f"The number of paths is {no_paths}")
